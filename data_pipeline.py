@@ -2016,11 +2016,56 @@ DATASET = [
   }
 ]
 
-def search(query="", limit=50):
+HS_CODES = DATASET
+
+SECTIONS = [
+    {"id": "I", "title": "Live Animals; Animal Products", "chapters": "1-5"},
+    {"id": "II", "title": "Vegetable Products", "chapters": "6-14"},
+    {"id": "III", "title": "Animal or Vegetable Fats and Oils", "chapters": "15"},
+    {"id": "IV", "title": "Prepared Foodstuffs", "chapters": "16-24"},
+    {"id": "V", "title": "Mineral Products", "chapters": "25-27"},
+    {"id": "VI", "title": "Products of the Chemical or Allied Industries", "chapters": "28-38"},
+    {"id": "VII", "title": "Plastics and Articles Thereof", "chapters": "39-40"},
+    {"id": "VIII", "title": "Raw Hides and Skins, Leather", "chapters": "41-43"},
+    {"id": "IX", "title": "Wood and Articles of Wood", "chapters": "44-46"},
+    {"id": "X", "title": "Pulp of Wood, Paper", "chapters": "47-49"},
+    {"id": "XI", "title": "Textiles and Textile Articles", "chapters": "50-63"},
+    {"id": "XII", "title": "Footwear, Headgear", "chapters": "64-67"},
+    {"id": "XIII", "title": "Articles of Stone, Ceramics, Glass", "chapters": "68-70"},
+    {"id": "XIV", "title": "Pearls, Precious Stones, Metals", "chapters": "71"},
+    {"id": "XV", "title": "Base Metals and Articles Thereof", "chapters": "72-83"},
+    {"id": "XVI", "title": "Machinery, Electrical Equipment", "chapters": "84-85"},
+    {"id": "XVII", "title": "Vehicles, Aircraft, Vessels", "chapters": "86-89"},
+    {"id": "XVIII", "title": "Optical, Medical, Musical Instruments", "chapters": "90-92"},
+    {"id": "XIX", "title": "Arms and Ammunition", "chapters": "93"},
+    {"id": "XX", "title": "Miscellaneous Manufactured Articles", "chapters": "94-96"},
+    {"id": "XXI", "title": "Works of Art, Collectors' Pieces", "chapters": "97-99"},
+]
+
+def search_hscodes(query="", section=None, limit=20):
     q = query.lower()
-    results = [r for r in DATASET if any(q in str(v).lower() for v in r.values())]
-    return results[:limit] if results else DATASET[:limit]
+    results = [r for r in HS_CODES if any(q in str(v).lower() for v in r.values())]
+    if section:
+        section_str = str(section)
+        results = [r for r in results if any(section_str in r.get("code", "") for _ in [1])]
+    return results[:limit] if results else HS_CODES[:limit]
+
+def get_hscode_detail(code):
+    for r in HS_CODES:
+        if r["code"] == code:
+            return r
+    return None
+
+def get_duty_rate(code, origin="CN", destination="US"):
+    for r in HS_CODES:
+        if r["code"] == code:
+            return {"code": code, "description": r["desc"], "duty_rate": r["duty_rate"],
+                    "origin": origin, "destination": destination, "notes": "General rate applied"}
+    return {"error": f"HS code {code} not found"}
+
+def search(query="", limit=50):
+    return search_hscodes(query, None, limit)
 
 def get_stats():
-    return {"total_records": len(DATASET), "data_source": "USITC Harmonized Tariff Schedule",
+    return {"total_records": len(HS_CODES), "data_source": "USITC Harmonized Tariff Schedule",
             "last_updated": "2026-05-05", "category": "E-Commerce"}
